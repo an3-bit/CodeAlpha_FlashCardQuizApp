@@ -24,7 +24,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <div className="relative w-full bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/3815729/pexels-photo-3815729.jpeg?auto=compress&cs=tinysrgb&w=1500')" }}>
+      <div className="relative w-full bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/6894013/pexels-photo-6894013.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')" }}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div className="container mx-auto px-4 py-24 md:py-32 relative">
           <header className="flex flex-col items-center text-center">
