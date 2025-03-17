@@ -1,20 +1,27 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./AuthContext";
+import { toast } from "sonner";
 
 export type Category = "fullstack" | "appdev" | "python";
 
 export interface Flashcard {
   id: string;
+  user_id?: string;
   question: string;
   answer: string;
   category: Category;
-  lastReviewed?: string;
-  timesReviewed?: number;
-  timesCorrect?: number;
+  last_reviewed?: string;
+  times_reviewed?: number;
+  times_correct?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface QuizResult {
   id: string;
+  user_id?: string;
   date: string;
   category: Category;
   totalQuestions: number;
@@ -22,15 +29,36 @@ export interface QuizResult {
   timeSpent: number; // in seconds
 }
 
+export interface SharedDeck {
+  id: string;
+  owner_id: string;
+  name: string;
+  description?: string;
+  category: Category;
+  is_public: boolean;
+  created_at?: string;
+  updated_at?: string;
+  flashcards?: Flashcard[];
+}
+
 interface FlashcardContextType {
   flashcards: Flashcard[];
-  addFlashcard: (flashcard: Omit<Flashcard, "id">) => void;
-  updateFlashcard: (flashcard: Flashcard) => void;
-  deleteFlashcard: (id: string) => void;
+  isLoading: boolean;
+  addFlashcard: (flashcard: Omit<Flashcard, "id" | "user_id">) => Promise<void>;
+  updateFlashcard: (flashcard: Flashcard) => Promise<void>;
+  deleteFlashcard: (id: string) => Promise<void>;
   getFlashcardsByCategory: (category: Category) => Flashcard[];
   quizResults: QuizResult[];
-  addQuizResult: (result: Omit<QuizResult, "id" | "date">) => void;
+  addQuizResult: (result: Omit<QuizResult, "id" | "date" | "user_id">) => Promise<void>;
   getResultsByCategory: (category: Category) => QuizResult[];
+  sharedDecks: SharedDeck[];
+  createSharedDeck: (deck: Omit<SharedDeck, "id" | "owner_id">) => Promise<void>;
+  addFlashcardToDeck: (deckId: string, flashcardId: string) => Promise<void>;
+  removeFlashcardFromDeck: (deckId: string, flashcardId: string) => Promise<void>;
+  getSharedDecksByCategory: (category: Category) => SharedDeck[];
+  getSharedDeckById: (id: string) => Promise<SharedDeck | null>;
+  updateSharedDeck: (deck: SharedDeck) => Promise<void>;
+  deleteSharedDeck: (id: string) => Promise<void>;
 }
 
 const FlashcardContext = createContext<FlashcardContextType | undefined>(undefined);
@@ -43,152 +71,487 @@ export const useFlashcards = () => {
   return context;
 };
 
-// Sample flashcards for initial state
-const sampleFlashcards: Flashcard[] = [
-  {
-    id: "1",
-    question: "What is React?",
-    answer: "React is a JavaScript library for building user interfaces, particularly single-page applications.",
-    category: "fullstack",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 2,
-    timesCorrect: 1,
-  },
-  {
-    id: "2",
-    question: "What is the Virtual DOM in React?",
-    answer: "The Virtual DOM is a lightweight copy of the actual DOM that React uses to improve performance by minimizing direct manipulations of the DOM.",
-    category: "fullstack",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 1,
-    timesCorrect: 1,
-  },
-  {
-    id: "3",
-    question: "What is Swift?",
-    answer: "Swift is Apple's programming language for iOS, macOS, watchOS, and tvOS app development.",
-    category: "appdev",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 3,
-    timesCorrect: 2,
-  },
-  {
-    id: "4",
-    question: "What is Kotlin?",
-    answer: "Kotlin is a cross-platform, statically typed, general-purpose programming language developed by JetBrains. It's officially supported by Google for Android development.",
-    category: "appdev",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 1,
-    timesCorrect: 0,
-  },
-  {
-    id: "5",
-    question: "What is a Python decorator?",
-    answer: "A decorator is a design pattern in Python that allows a user to add new functionality to an existing object without modifying its structure.",
-    category: "python",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 2,
-    timesCorrect: 2,
-  },
-  {
-    id: "6",
-    question: "What are Python list comprehensions?",
-    answer: "List comprehensions provide a concise way to create lists based on existing lists. They are a syntactic construct that enables you to create a list from another list or iterator.",
-    category: "python",
-    lastReviewed: new Date().toISOString(),
-    timesReviewed: 1,
-    timesCorrect: 1,
-  },
-];
-
-// Sample quiz results
-const sampleQuizResults: QuizResult[] = [
-  {
-    id: "r1",
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
-    category: "fullstack",
-    totalQuestions: 5,
-    correctAnswers: 4,
-    timeSpent: 120,
-  },
-  {
-    id: "r2",
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-    category: "fullstack",
-    totalQuestions: 5,
-    correctAnswers: 5,
-    timeSpent: 110,
-  },
-  {
-    id: "r3",
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    category: "python",
-    totalQuestions: 4,
-    correctAnswers: 3,
-    timeSpent: 90,
-  },
-];
-
 export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [flashcards, setFlashcards] = useState<Flashcard[]>(() => {
-    const savedFlashcards = localStorage.getItem("flashcards");
-    return savedFlashcards ? JSON.parse(savedFlashcards) : sampleFlashcards;
-  });
+  const { user } = useAuth();
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
+  const [sharedDecks, setSharedDecks] = useState<SharedDeck[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [quizResults, setQuizResults] = useState<QuizResult[]>(() => {
-    const savedResults = localStorage.getItem("quizResults");
-    return savedResults ? JSON.parse(savedResults) : sampleQuizResults;
-  });
-
-  // Save to localStorage whenever state changes
+  // Fetch flashcards from Supabase when user changes
   useEffect(() => {
-    localStorage.setItem("flashcards", JSON.stringify(flashcards));
-  }, [flashcards]);
+    const fetchFlashcards = async () => {
+      if (!user) {
+        setFlashcards([]);
+        setIsLoading(false);
+        return;
+      }
 
-  useEffect(() => {
-    localStorage.setItem("quizResults", JSON.stringify(quizResults));
-  }, [quizResults]);
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('flashcards')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-  const addFlashcard = (flashcard: Omit<Flashcard, "id">) => {
-    const newFlashcard: Flashcard = {
-      ...flashcard,
-      id: Date.now().toString(),
-      lastReviewed: new Date().toISOString(),
-      timesReviewed: 0,
-      timesCorrect: 0,
+        if (error) throw error;
+        
+        setFlashcards(data || []);
+      } catch (error: any) {
+        console.error('Error fetching flashcards:', error);
+        toast.error('Failed to load flashcards');
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setFlashcards([...flashcards, newFlashcard]);
+
+    fetchFlashcards();
+  }, [user]);
+
+  // Fetch quiz results from Supabase when user changes
+  useEffect(() => {
+    const fetchQuizResults = async () => {
+      if (!user) {
+        setQuizResults([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('quiz_results')
+          .select('*')
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+        
+        // Map to match our expected format
+        const formattedResults = data.map(result => ({
+          id: result.id,
+          user_id: result.user_id,
+          date: result.date,
+          category: result.category as Category,
+          totalQuestions: result.total_questions,
+          correctAnswers: result.correct_answers,
+          timeSpent: result.time_spent
+        }));
+        
+        setQuizResults(formattedResults || []);
+      } catch (error: any) {
+        console.error('Error fetching quiz results:', error);
+        toast.error('Failed to load quiz results');
+      }
+    };
+
+    fetchQuizResults();
+  }, [user]);
+
+  // Fetch shared decks from Supabase when user changes
+  useEffect(() => {
+    const fetchSharedDecks = async () => {
+      if (!user) {
+        setSharedDecks([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('shared_decks')
+          .select('*')
+          .or(`is_public.eq.true,owner_id.eq.${user.id}`)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        setSharedDecks(data || []);
+      } catch (error: any) {
+        console.error('Error fetching shared decks:', error);
+        toast.error('Failed to load shared decks');
+      }
+    };
+
+    fetchSharedDecks();
+  }, [user]);
+
+  const addFlashcard = async (flashcard: Omit<Flashcard, "id" | "user_id">) => {
+    if (!user) {
+      toast.error('You must be logged in to add flashcards');
+      return;
+    }
+
+    try {
+      const newFlashcard = {
+        ...flashcard,
+        user_id: user.id,
+        last_reviewed: new Date().toISOString(),
+        times_reviewed: 0,
+        times_correct: 0
+      };
+
+      const { data, error } = await supabase
+        .from('flashcards')
+        .insert([newFlashcard])
+        .select();
+
+      if (error) throw error;
+      
+      if (data && data[0]) {
+        setFlashcards([data[0], ...flashcards]);
+        toast.success('Flashcard created successfully');
+      }
+    } catch (error: any) {
+      console.error('Error adding flashcard:', error);
+      toast.error('Failed to create flashcard');
+    }
   };
 
-  const updateFlashcard = (updatedFlashcard: Flashcard) => {
-    setFlashcards(
-      flashcards.map((card) => (card.id === updatedFlashcard.id ? updatedFlashcard : card))
-    );
+  const updateFlashcard = async (flashcard: Flashcard) => {
+    if (!user) {
+      toast.error('You must be logged in to update flashcards');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('flashcards')
+        .update({
+          question: flashcard.question,
+          answer: flashcard.answer,
+          category: flashcard.category,
+          last_reviewed: flashcard.last_reviewed || new Date().toISOString(),
+          times_reviewed: flashcard.times_reviewed,
+          times_correct: flashcard.times_correct,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', flashcard.id);
+
+      if (error) throw error;
+      
+      setFlashcards(
+        flashcards.map((card) => (card.id === flashcard.id ? flashcard : card))
+      );
+      
+      toast.success('Flashcard updated successfully');
+    } catch (error: any) {
+      console.error('Error updating flashcard:', error);
+      toast.error('Failed to update flashcard');
+    }
   };
 
-  const deleteFlashcard = (id: string) => {
-    setFlashcards(flashcards.filter((card) => card.id !== id));
+  const deleteFlashcard = async (id: string) => {
+    if (!user) {
+      toast.error('You must be logged in to delete flashcards');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setFlashcards(flashcards.filter((card) => card.id !== id));
+      toast.success('Flashcard deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting flashcard:', error);
+      toast.error('Failed to delete flashcard');
+    }
   };
 
   const getFlashcardsByCategory = (category: Category): Flashcard[] => {
     return flashcards.filter((card) => card.category === category);
   };
 
-  const addQuizResult = (result: Omit<QuizResult, "id" | "date">) => {
-    const newResult: QuizResult = {
-      ...result,
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-    };
-    setQuizResults([...quizResults, newResult]);
+  const addQuizResult = async (result: Omit<QuizResult, "id" | "date" | "user_id">) => {
+    if (!user) {
+      toast.error('You must be logged in to save quiz results');
+      return;
+    }
+
+    try {
+      const newResult = {
+        user_id: user.id,
+        category: result.category,
+        total_questions: result.totalQuestions,
+        correct_answers: result.correctAnswers,
+        time_spent: result.timeSpent,
+        date: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('quiz_results')
+        .insert([newResult])
+        .select();
+
+      if (error) throw error;
+      
+      if (data && data[0]) {
+        const formattedResult: QuizResult = {
+          id: data[0].id,
+          user_id: data[0].user_id,
+          date: data[0].date,
+          category: data[0].category,
+          totalQuestions: data[0].total_questions,
+          correctAnswers: data[0].correct_answers,
+          timeSpent: data[0].time_spent
+        };
+        
+        setQuizResults([formattedResult, ...quizResults]);
+        
+        // Update study metrics
+        await updateStudyMetrics(result.category, result.timeSpent, result.totalQuestions, result.correctAnswers);
+      }
+    } catch (error: any) {
+      console.error('Error adding quiz result:', error);
+      toast.error('Failed to save quiz result');
+    }
+  };
+
+  const updateStudyMetrics = async (
+    category: Category, 
+    timeSpent: number, 
+    cardsReviewed: number, 
+    correctAnswers: number
+  ) => {
+    if (!user) return;
+
+    try {
+      // Check if metrics for this category exist
+      const { data, error } = await supabase
+        .from('study_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('category', category)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        throw error;
+      }
+
+      const newAccuracy = correctAnswers / cardsReviewed;
+
+      if (data) {
+        // Update existing metrics
+        const totalCards = data.cards_reviewed + cardsReviewed;
+        const weightedAccuracy = (
+          (data.average_accuracy * data.cards_reviewed) + 
+          (newAccuracy * cardsReviewed)
+        ) / totalCards;
+
+        await supabase
+          .from('study_metrics')
+          .update({
+            total_study_time: data.total_study_time + timeSpent,
+            cards_reviewed: totalCards,
+            average_accuracy: weightedAccuracy,
+            last_study_date: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', data.id);
+      } else {
+        // Create new metrics
+        await supabase
+          .from('study_metrics')
+          .insert([{
+            user_id: user.id,
+            category,
+            total_study_time: timeSpent,
+            cards_reviewed: cardsReviewed,
+            average_accuracy: newAccuracy,
+            last_study_date: new Date().toISOString()
+          }]);
+      }
+    } catch (error: any) {
+      console.error('Error updating study metrics:', error);
+    }
   };
 
   const getResultsByCategory = (category: Category): QuizResult[] => {
     return quizResults.filter((result) => result.category === category);
   };
 
+  const createSharedDeck = async (deck: Omit<SharedDeck, "id" | "owner_id">) => {
+    if (!user) {
+      toast.error('You must be logged in to create shared decks');
+      return;
+    }
+
+    try {
+      const newDeck = {
+        ...deck,
+        owner_id: user.id
+      };
+
+      const { data, error } = await supabase
+        .from('shared_decks')
+        .insert([newDeck])
+        .select();
+
+      if (error) throw error;
+      
+      if (data && data[0]) {
+        setSharedDecks([data[0], ...sharedDecks]);
+        toast.success('Deck created successfully');
+      }
+    } catch (error: any) {
+      console.error('Error creating shared deck:', error);
+      toast.error('Failed to create shared deck');
+    }
+  };
+
+  const addFlashcardToDeck = async (deckId: string, flashcardId: string) => {
+    if (!user) {
+      toast.error('You must be logged in to add flashcards to a deck');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('shared_deck_flashcards')
+        .insert([{
+          deck_id: deckId,
+          flashcard_id: flashcardId
+        }]);
+
+      if (error) throw error;
+      
+      toast.success('Flashcard added to deck');
+    } catch (error: any) {
+      console.error('Error adding flashcard to deck:', error);
+      toast.error('Failed to add flashcard to deck');
+    }
+  };
+
+  const removeFlashcardFromDeck = async (deckId: string, flashcardId: string) => {
+    if (!user) {
+      toast.error('You must be logged in to remove flashcards from a deck');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('shared_deck_flashcards')
+        .delete()
+        .eq('deck_id', deckId)
+        .eq('flashcard_id', flashcardId);
+
+      if (error) throw error;
+      
+      toast.success('Flashcard removed from deck');
+    } catch (error: any) {
+      console.error('Error removing flashcard from deck:', error);
+      toast.error('Failed to remove flashcard from deck');
+    }
+  };
+
+  const getSharedDecksByCategory = (category: Category): SharedDeck[] => {
+    return sharedDecks.filter((deck) => deck.category === category);
+  };
+
+  const getSharedDeckById = async (id: string): Promise<SharedDeck | null> => {
+    try {
+      // Get the deck
+      const { data: deckData, error: deckError } = await supabase
+        .from('shared_decks')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (deckError) throw deckError;
+      if (!deckData) return null;
+
+      // Get flashcards associated with the deck
+      const { data: flashcardLinks, error: linksError } = await supabase
+        .from('shared_deck_flashcards')
+        .select('flashcard_id')
+        .eq('deck_id', id);
+
+      if (linksError) throw linksError;
+
+      if (flashcardLinks && flashcardLinks.length > 0) {
+        const flashcardIds = flashcardLinks.map(link => link.flashcard_id);
+        
+        const { data: flashcardsData, error: flashcardsError } = await supabase
+          .from('flashcards')
+          .select('*')
+          .in('id', flashcardIds);
+
+        if (flashcardsError) throw flashcardsError;
+        
+        return {
+          ...deckData,
+          flashcards: flashcardsData || []
+        };
+      }
+
+      return {
+        ...deckData,
+        flashcards: []
+      };
+    } catch (error: any) {
+      console.error('Error fetching shared deck:', error);
+      toast.error('Failed to load shared deck');
+      return null;
+    }
+  };
+
+  const updateSharedDeck = async (deck: SharedDeck) => {
+    if (!user) {
+      toast.error('You must be logged in to update decks');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('shared_decks')
+        .update({
+          name: deck.name,
+          description: deck.description,
+          category: deck.category,
+          is_public: deck.is_public,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', deck.id);
+
+      if (error) throw error;
+      
+      setSharedDecks(
+        sharedDecks.map((d) => (d.id === deck.id ? deck : d))
+      );
+      
+      toast.success('Deck updated successfully');
+    } catch (error: any) {
+      console.error('Error updating deck:', error);
+      toast.error('Failed to update deck');
+    }
+  };
+
+  const deleteSharedDeck = async (id: string) => {
+    if (!user) {
+      toast.error('You must be logged in to delete decks');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('shared_decks')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setSharedDecks(sharedDecks.filter((deck) => deck.id !== id));
+      toast.success('Deck deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting deck:', error);
+      toast.error('Failed to delete deck');
+    }
+  };
+
   const value = {
     flashcards,
+    isLoading,
     addFlashcard,
     updateFlashcard,
     deleteFlashcard,
@@ -196,6 +559,14 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     quizResults,
     addQuizResult,
     getResultsByCategory,
+    sharedDecks,
+    createSharedDeck,
+    addFlashcardToDeck,
+    removeFlashcardFromDeck,
+    getSharedDecksByCategory,
+    getSharedDeckById,
+    updateSharedDeck,
+    deleteSharedDeck
   };
 
   return <FlashcardContext.Provider value={value}>{children}</FlashcardContext.Provider>;

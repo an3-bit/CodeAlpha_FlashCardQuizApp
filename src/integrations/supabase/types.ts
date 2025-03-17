@@ -9,7 +9,177 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      flashcards: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string | null
+          id: string
+          last_reviewed: string | null
+          question: string
+          times_correct: number | null
+          times_reviewed: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          category: string
+          created_at?: string | null
+          id?: string
+          last_reviewed?: string | null
+          question: string
+          times_correct?: number | null
+          times_reviewed?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string | null
+          id?: string
+          last_reviewed?: string | null
+          question?: string
+          times_correct?: number | null
+          times_reviewed?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          category: string
+          correct_answers: number
+          date: string | null
+          id: string
+          time_spent: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          category: string
+          correct_answers: number
+          date?: string | null
+          id?: string
+          time_spent: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          correct_answers?: number
+          date?: string | null
+          id?: string
+          time_spent?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shared_deck_flashcards: {
+        Row: {
+          deck_id: string
+          flashcard_id: string
+          id: string
+        }
+        Insert: {
+          deck_id: string
+          flashcard_id: string
+          id?: string
+        }
+        Update: {
+          deck_id?: string
+          flashcard_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_deck_flashcards_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "shared_decks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_deck_flashcards_flashcard_id_fkey"
+            columns: ["flashcard_id"]
+            isOneToOne: false
+            referencedRelation: "flashcards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_decks: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      study_metrics: {
+        Row: {
+          average_accuracy: number | null
+          cards_reviewed: number | null
+          category: string
+          created_at: string | null
+          id: string
+          last_study_date: string | null
+          total_study_time: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          average_accuracy?: number | null
+          cards_reviewed?: number | null
+          category: string
+          created_at?: string | null
+          id?: string
+          last_study_date?: string | null
+          total_study_time?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          average_accuracy?: number | null
+          cards_reviewed?: number | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          last_study_date?: string | null
+          total_study_time?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

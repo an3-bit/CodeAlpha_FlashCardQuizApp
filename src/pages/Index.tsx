@@ -1,125 +1,141 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Header from "@/components/Header";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, BookOpen, Brain, Share2, Users } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
-import { useFlashcards } from "@/context/FlashcardContext";
-import { calculateMasteryPercentage, getAverageScore } from "@/lib/helpers";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
-  const { flashcards, getFlashcardsByCategory, quizResults } = useFlashcards();
-  
-  const categories = ["fullstack", "appdev", "python"] as const;
-  const fullstackCards = getFlashcardsByCategory("fullstack");
-  const appdevCards = getFlashcardsByCategory("appdev");
-  const pythonCards = getFlashcardsByCategory("python");
-  
-  const fullstackMastery = calculateMasteryPercentage(fullstackCards);
-  const appdevMastery = calculateMasteryPercentage(appdevCards);
-  const pythonMastery = calculateMasteryPercentage(pythonCards);
-  
-  const averageScore = getAverageScore(quizResults);
-  const totalCards = flashcards.length;
-  const recentQuiz = quizResults.length > 0
-    ? quizResults.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-    : null;
+  const { user, signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container py-8 px-4 md:px-6 animate-fade-in">
-        <section className="mb-12">
-          <div className="max-w-3xl mx-auto text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-medium tracking-tight mb-3">
-              Master Development Skills with FlashWise
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Create, study, and quiz yourself on flashcards for Fullstack Web Development, 
-              App Development, and Python Programming.
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <div className="container mx-auto px-4 py-12 md:py-24">
+        <header className="mb-12 md:mb-20 flex flex-col items-center text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            Welcome to FlashWise
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl">
+            Master any subject with smart flashcards and spaced repetition
+          </p>
+          <div className="flex gap-4 mt-8">
+            {user ? (
+              <>
+                <Button asChild size="lg">
+                  <Link to="/flashcards">My Flashcards</Link>
+                </Button>
+                <Button variant="outline" size="lg" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild size="lg">
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              </>
+            )}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <CategoryCard 
-              category="fullstack" 
-              count={fullstackCards.length} 
-              masteryPercentage={fullstackMastery.percentage} 
+        </header>
+
+        <section className="mb-16 md:mb-24">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
+            Choose a Category to Start Learning
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <CategoryCard
+              title="Fullstack Development"
+              description="Master React, Node.js, databases, and modern web development"
+              icon={<BookOpen className="w-10 h-10" />}
+              href={user ? "/flashcards/fullstack" : "/auth"}
             />
-            <CategoryCard 
-              category="appdev" 
-              count={appdevCards.length} 
-              masteryPercentage={appdevMastery.percentage} 
+            <CategoryCard
+              title="App Development"
+              description="Learn iOS, Android, and cross-platform mobile development"
+              icon={<Brain className="w-10 h-10" />}
+              href={user ? "/flashcards/appdev" : "/auth"}
             />
-            <CategoryCard 
-              category="python" 
-              count={pythonCards.length} 
-              masteryPercentage={pythonMastery.percentage} 
+            <CategoryCard
+              title="Python Programming"
+              description="Explore Python fundamentals, data science, and automation"
+              icon={<Users className="w-10 h-10" />}
+              href={user ? "/flashcards/python" : "/auth"}
             />
-          </div>
-        </section>
-        
-        <section className="mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Your Study Stats</CardTitle>
-                <CardDescription>A quick overview of your learning progress</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-secondary rounded-xl p-4 flex flex-col items-center justify-center text-center aspect-square">
-                    <span className="text-muted-foreground text-sm">Total Flashcards</span>
-                    <span className="text-3xl font-medium mt-1">{totalCards}</span>
-                  </div>
-                  <div className="bg-secondary rounded-xl p-4 flex flex-col items-center justify-center text-center aspect-square">
-                    <span className="text-muted-foreground text-sm">Average Score</span>
-                    <span className="text-3xl font-medium mt-1">{averageScore}%</span>
-                  </div>
-                  <div className="bg-secondary rounded-xl p-4 flex flex-col items-center justify-center text-center aspect-square">
-                    <span className="text-muted-foreground text-sm">Quizzes Taken</span>
-                    <span className="text-3xl font-medium mt-1">{quizResults.length}</span>
-                  </div>
-                  <div className="bg-secondary rounded-xl p-4 flex flex-col items-center justify-center text-center aspect-square">
-                    <span className="text-muted-foreground text-sm">Recent Score</span>
-                    <span className="text-3xl font-medium mt-1">
-                      {recentQuiz 
-                        ? `${Math.round((recentQuiz.correctAnswers / recentQuiz.totalQuestions) * 100)}%` 
-                        : "N/A"}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Start learning or create new content</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-4">
-                  <Button asChild size="lg" className="w-full py-8 h-auto">
-                    <Link to="/flashcards/create" className="flex items-center justify-center gap-2">
-                      <Plus className="h-5 w-5" />
-                      <span>Create New Flashcard</span>
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full py-8 h-auto">
-                    <Link to="/quiz" className="flex items-center justify-center gap-2">
-                      <Sparkles className="h-5 w-5" />
-                      <span>Start a Quick Quiz</span>
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </section>
-      </main>
+
+        <section className="mb-16 md:mb-24">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
+            Why FlashWise Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
+                  <BookOpen className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">Active Recall</h3>
+                <p className="text-muted-foreground">
+                  Actively retrieving information strengthens memory connections,
+                  making it easier to recall later.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
+                  <Brain className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">Spaced Repetition</h3>
+                <p className="text-muted-foreground">
+                  Review cards at optimal intervals to move information from
+                  short-term to long-term memory.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
+                  <Share2 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">Shared Learning</h3>
+                <p className="text-muted-foreground">
+                  Create and share flashcard decks with friends or colleagues to
+                  enhance collaborative learning.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">
+            Ready to Boost Your Learning?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Join thousands of students and professionals who use FlashWise to
+            learn faster and remember longer.
+          </p>
+          {user ? (
+            <Button asChild size="lg">
+              <Link to="/flashcards">
+                Go to My Flashcards <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg">
+              <Link to="/auth">
+                Create Your Account <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+        </section>
+      </div>
     </div>
   );
 };
