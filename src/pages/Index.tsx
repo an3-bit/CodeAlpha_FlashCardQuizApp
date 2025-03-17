@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, BookOpen, Brain, Share2, Users } from "lucide-react";
+import { ArrowRight, BookOpen, Brain, Share2 } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { useAuth } from "@/context/AuthContext";
 import { useFlashcards } from "@/context/FlashcardContext";
@@ -24,37 +24,42 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-12 md:py-24">
-        <header className="mb-12 md:mb-20 flex flex-col items-center text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            Welcome to FlashWise
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl">
-            Master any subject with smart flashcards and spaced repetition
-          </p>
-          <div className="flex gap-4 mt-8">
-            {user ? (
-              <>
-                <Button asChild size="lg">
-                  <Link to="/flashcards">My Flashcards</Link>
-                </Button>
-                <Button variant="outline" size="lg" onClick={signOut}>
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button asChild size="lg">
-                  <Link to="/auth">Get Started</Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </header>
+      <div className="relative w-full bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/3815729/pexels-photo-3815729.jpeg?auto=compress&cs=tinysrgb&w=1500')" }}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div className="container mx-auto px-4 py-24 md:py-32 relative">
+          <header className="flex flex-col items-center text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
+              Welcome to FlashWise
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl">
+              Master any subject with smart flashcards and spaced repetition
+            </p>
+            <div className="flex gap-4 mt-8">
+              {user ? (
+                <>
+                  <Button asChild size="lg" className="bg-primary/90 hover:bg-primary">
+                    <Link to="/flashcards">My Flashcards</Link>
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={signOut} className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild size="lg" className="bg-primary/90 hover:bg-primary">
+                    <Link to="/auth">Get Started</Link>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    <Link to="/auth">Sign In</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </header>
+        </div>
+      </div>
 
+      <div className="container mx-auto px-4 py-12">
         <section className="mb-16 md:mb-24">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
             Choose a Category to Start Learning
@@ -115,9 +120,9 @@ const Index = () => {
           </div>
           <div className="flex justify-center">
             <img 
-              src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1546&q=80" 
+              src="https://images.pexels.com/photos/4065156/pexels-photo-4065156.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
               alt="Student studying with flashcards" 
-              className="rounded-lg shadow-lg w-full max-w-md object-cover"
+              className="rounded-lg shadow-lg w-full max-w-md object-cover h-[400px]"
             />
           </div>
         </section>
@@ -127,7 +132,7 @@ const Index = () => {
             Why FlashWise Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card>
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 backdrop-blur-sm border-0 shadow-md">
               <CardContent className="pt-6">
                 <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
                   <BookOpen className="w-6 h-6 text-primary" />
@@ -139,7 +144,7 @@ const Index = () => {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-gradient-to-br from-amber-50 to-orange-100 backdrop-blur-sm border-0 shadow-md">
               <CardContent className="pt-6">
                 <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
                   <Brain className="w-6 h-6 text-primary" />
@@ -151,7 +156,7 @@ const Index = () => {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-100 backdrop-blur-sm border-0 shadow-md">
               <CardContent className="pt-6">
                 <div className="rounded-full p-3 bg-primary/10 w-fit mb-4">
                   <Share2 className="w-6 h-6 text-primary" />
