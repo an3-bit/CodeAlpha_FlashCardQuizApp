@@ -6,9 +6,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BookOpen, Brain, Share2, Users } from "lucide-react";
 import CategoryCard from "@/components/CategoryCard";
 import { useAuth } from "@/context/AuthContext";
+import { useFlashcards } from "@/context/FlashcardContext";
+import { calculateMasteryPercentage } from "@/lib/helpers";
 
 const Index = () => {
   const { user, signOut } = useAuth();
+  const { flashcards } = useFlashcards();
+
+  // Calculate mastery percentages for each category
+  const fullstackFlashcards = flashcards.filter(card => card.category === "fullstack");
+  const appdevFlashcards = flashcards.filter(card => card.category === "appdev");
+  const pythonFlashcards = flashcards.filter(card => card.category === "python");
+
+  const fullstackMastery = calculateMasteryPercentage(fullstackFlashcards).percentage;
+  const appdevMastery = calculateMasteryPercentage(appdevFlashcards).percentage;
+  const pythonMastery = calculateMasteryPercentage(pythonFlashcards).percentage;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -49,22 +61,63 @@ const Index = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <CategoryCard
-              category="Fullstack Development"
-              description="Master React, Node.js, databases, and modern web development"
-              icon={<BookOpen className="w-10 h-10" />}
-              href={user ? "/flashcards/fullstack" : "/auth"}
+              category="fullstack"
+              count={fullstackFlashcards.length}
+              masteryPercentage={fullstackMastery}
             />
             <CategoryCard
-              category="App Development"
-              description="Learn iOS, Android, and cross-platform mobile development"
-              icon={<Brain className="w-10 h-10" />}
-              href={user ? "/flashcards/appdev" : "/auth"}
+              category="appdev"
+              count={appdevFlashcards.length}
+              masteryPercentage={appdevMastery}
             />
             <CategoryCard
-              category="Python Programming"
-              description="Explore Python fundamentals, data science, and automation"
-              icon={<Users className="w-10 h-10" />}
-              href={user ? "/flashcards/python" : "/auth"}
+              category="python"
+              count={pythonFlashcards.length}
+              masteryPercentage={pythonMastery}
+            />
+          </div>
+        </section>
+
+        <section className="mb-16 md:mb-24 grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">
+              Learn Faster, Remember Longer
+            </h2>
+            <p className="text-lg mb-6 text-muted-foreground">
+              FlashWise combines smart flashcards with proven learning techniques 
+              like spaced repetition and active recall to help you remember what you learn.
+            </p>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="rounded-full p-1 bg-primary/10 mt-1">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                </div>
+                <span>Create custom flashcards for any subject</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="rounded-full p-1 bg-primary/10 mt-1">
+                  <Brain className="w-4 h-4 text-primary" />
+                </div>
+                <span>Track your progress with detailed analytics</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="rounded-full p-1 bg-primary/10 mt-1">
+                  <Share2 className="w-4 h-4 text-primary" />
+                </div>
+                <span>Share decks and study collaboratively</span>
+              </li>
+            </ul>
+            <Button asChild size="lg">
+              <Link to={user ? "/flashcards" : "/auth"}>
+                Start Learning <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <img 
+              src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1546&q=80" 
+              alt="Student studying with flashcards" 
+              className="rounded-lg shadow-lg w-full max-w-md object-cover"
             />
           </div>
         </section>
