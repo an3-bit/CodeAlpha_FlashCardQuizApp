@@ -46,8 +46,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         <Card className="flashcard-front flex flex-col justify-between p-6 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="text-xs text-muted-foreground">
-              {flashcard.lastReviewed && (
-                <span>Last reviewed: {getTimeAgo(flashcard.lastReviewed)}</span>
+              {flashcard.last_reviewed && (
+                <span>Last reviewed: {getTimeAgo(flashcard.last_reviewed)}</span>
               )}
             </div>
             {!quizMode && (
@@ -80,12 +80,12 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         <Card className="flashcard-back flex flex-col justify-between p-6 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="text-xs text-muted-foreground">
-              {flashcard.timesReviewed !== undefined && (
+              {flashcard.times_reviewed !== undefined && (
                 <span>
                   Success rate:{" "}
-                  {flashcard.timesReviewed > 0
+                  {flashcard.times_reviewed > 0
                     ? Math.round(
-                        ((flashcard.timesCorrect || 0) / flashcard.timesReviewed) * 100
+                        ((flashcard.times_correct || 0) / flashcard.times_reviewed) * 100
                       )
                     : 0}
                   %

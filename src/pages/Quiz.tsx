@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Clock, Flame, HelpCircle } from "lucide-react";
@@ -22,7 +21,6 @@ const Quiz = () => {
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   
-  // Initialize quiz with flashcards from the selected category or all categories
   useEffect(() => {
     let cards: Flashcard[] = [];
     
@@ -36,17 +34,14 @@ const Quiz = () => {
       });
     }
     
-    // Limit to 10 cards and shuffle
     const limitedCards = shuffleArray(cards).slice(0, 10);
     setQuizCards(limitedCards);
     
-    // Reset quiz state
     setCurrentStep(0);
     setAnsweredCards({});
     setStartTime(Date.now());
     setIsQuizComplete(false);
     
-    // Initialize timer
     const timer = setInterval(() => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
@@ -54,14 +49,12 @@ const Quiz = () => {
     return () => clearInterval(timer);
   }, [category, getFlashcardsByCategory]);
   
-  // Complete quiz when all cards are answered
   useEffect(() => {
     if (quizCards.length > 0 && Object.keys(answeredCards).length === quizCards.length) {
       const totalTime = Math.floor((Date.now() - startTime) / 1000);
       
       const correctAnswers = Object.values(answeredCards).filter(value => value).length;
       
-      // Add quiz result
       const quizCategory = category || "fullstack";
       addQuizResult({
         category: quizCategory as Category,
@@ -75,41 +68,35 @@ const Quiz = () => {
   }, [answeredCards, quizCards, startTime, addQuizResult, category]);
   
   const handleCorrectAnswer = (flashcard: Flashcard) => {
-    // Mark as answered correctly
     setAnsweredCards({
       ...answeredCards,
       [flashcard.id]: true,
     });
     
-    // Update flashcard stats
     updateFlashcard({
       ...flashcard,
-      lastReviewed: new Date().toISOString(),
-      timesReviewed: (flashcard.timesReviewed || 0) + 1,
-      timesCorrect: (flashcard.timesCorrect || 0) + 1,
+      last_reviewed: new Date().toISOString(),
+      times_reviewed: (flashcard.times_reviewed || 0) + 1,
+      times_correct: (flashcard.times_correct || 0) + 1,
     });
     
-    // Move to next card or end quiz
     if (currentStep < quizCards.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
   
   const handleIncorrectAnswer = (flashcard: Flashcard) => {
-    // Mark as answered incorrectly
     setAnsweredCards({
       ...answeredCards,
       [flashcard.id]: false,
     });
     
-    // Update flashcard stats
     updateFlashcard({
       ...flashcard,
-      lastReviewed: new Date().toISOString(),
-      timesReviewed: (flashcard.timesReviewed || 0) + 1,
+      last_reviewed: new Date().toISOString(),
+      times_reviewed: (flashcard.times_reviewed || 0) + 1,
     });
     
-    // Move to next card or end quiz
     if (currentStep < quizCards.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -131,12 +118,10 @@ const Quiz = () => {
     navigate("/results");
   };
   
-  // Calculate quiz progress
   const progress = quizCards.length > 0
     ? Math.round((Object.keys(answeredCards).length / quizCards.length) * 100)
     : 0;
   
-  // Calculate current score
   const correctAnswers = Object.values(answeredCards).filter(value => value).length;
   const currentScore = quizCards.length > 0
     ? Math.round((correctAnswers / Object.keys(answeredCards).length) * 100) || 0

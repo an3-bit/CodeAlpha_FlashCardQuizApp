@@ -49,19 +49,19 @@ const Index = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <CategoryCard
-              title="Fullstack Development"
+              category="Fullstack Development"
               description="Master React, Node.js, databases, and modern web development"
               icon={<BookOpen className="w-10 h-10" />}
               href={user ? "/flashcards/fullstack" : "/auth"}
             />
             <CategoryCard
-              title="App Development"
+              category="App Development"
               description="Learn iOS, Android, and cross-platform mobile development"
               icon={<Brain className="w-10 h-10" />}
               href={user ? "/flashcards/appdev" : "/auth"}
             />
             <CategoryCard
-              title="Python Programming"
+              category="Python Programming"
               description="Explore Python fundamentals, data science, and automation"
               icon={<Users className="w-10 h-10" />}
               href={user ? "/flashcards/python" : "/auth"}

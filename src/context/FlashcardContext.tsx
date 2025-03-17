@@ -96,7 +96,13 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         if (error) throw error;
         
-        setFlashcards(data || []);
+        // Map the data to ensure category is of type Category
+        const typedFlashcards = data?.map(card => ({
+          ...card,
+          category: card.category as Category
+        })) || [];
+        
+        setFlashcards(typedFlashcards);
       } catch (error: any) {
         console.error('Error fetching flashcards:', error);
         toast.error('Failed to load flashcards');
@@ -125,7 +131,7 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (error) throw error;
         
         // Map to match our expected format
-        const formattedResults = data.map(result => ({
+        const formattedResults = data?.map(result => ({
           id: result.id,
           user_id: result.user_id,
           date: result.date,
@@ -133,9 +139,9 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           totalQuestions: result.total_questions,
           correctAnswers: result.correct_answers,
           timeSpent: result.time_spent
-        }));
+        })) || [];
         
-        setQuizResults(formattedResults || []);
+        setQuizResults(formattedResults);
       } catch (error: any) {
         console.error('Error fetching quiz results:', error);
         toast.error('Failed to load quiz results');
@@ -162,7 +168,13 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         if (error) throw error;
         
-        setSharedDecks(data || []);
+        // Map the data to ensure category is of type Category
+        const typedDecks = data?.map(deck => ({
+          ...deck,
+          category: deck.category as Category
+        })) || [];
+        
+        setSharedDecks(typedDecks);
       } catch (error: any) {
         console.error('Error fetching shared decks:', error);
         toast.error('Failed to load shared decks');
@@ -195,7 +207,11 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (error) throw error;
       
       if (data && data[0]) {
-        setFlashcards([data[0], ...flashcards]);
+        const typedFlashcard = {
+          ...data[0],
+          category: data[0].category as Category
+        };
+        setFlashcards([typedFlashcard, ...flashcards]);
         toast.success('Flashcard created successfully');
       }
     } catch (error: any) {
@@ -291,7 +307,7 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           id: data[0].id,
           user_id: data[0].user_id,
           date: data[0].date,
-          category: data[0].category,
+          category: data[0].category as Category,
           totalQuestions: data[0].total_questions,
           correctAnswers: data[0].correct_answers,
           timeSpent: data[0].time_spent
@@ -391,7 +407,11 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (error) throw error;
       
       if (data && data[0]) {
-        setSharedDecks([data[0], ...sharedDecks]);
+        const typedDeck = {
+          ...data[0],
+          category: data[0].category as Category
+        };
+        setSharedDecks([typedDeck, ...sharedDecks]);
         toast.success('Deck created successfully');
       }
     } catch (error: any) {
@@ -479,14 +499,22 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         if (flashcardsError) throw flashcardsError;
         
+        // Map the flashcards to ensure category is of type Category
+        const typedFlashcards = flashcardsData?.map(card => ({
+          ...card,
+          category: card.category as Category
+        })) || [];
+        
         return {
           ...deckData,
-          flashcards: flashcardsData || []
+          category: deckData.category as Category,
+          flashcards: typedFlashcards
         };
       }
 
       return {
         ...deckData,
+        category: deckData.category as Category,
         flashcards: []
       };
     } catch (error: any) {

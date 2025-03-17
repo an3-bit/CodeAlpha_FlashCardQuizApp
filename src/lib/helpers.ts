@@ -40,7 +40,7 @@ export const calculateMasteryPercentage = (
   if (total === 0) return { mastered: 0, total: 0, percentage: 0 };
 
   const mastered = flashcards.filter(
-    (card) => (card.timesCorrect || 0) / (card.timesReviewed || 1) >= 0.8
+    (card) => (card.times_correct || 0) / (card.times_reviewed || 1) >= 0.8
   ).length;
 
   return {

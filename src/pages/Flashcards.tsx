@@ -47,23 +47,23 @@ const Flashcards = () => {
   
   const sortedFlashcards = [...searchedFlashcards].sort((a, b) => {
     if (sortBy === "newest") {
-      return new Date(b.lastReviewed || "").getTime() - new Date(a.lastReviewed || "").getTime();
+      return new Date(b.last_reviewed || "").getTime() - new Date(a.last_reviewed || "").getTime();
     } else if (sortBy === "oldest") {
-      return new Date(a.lastReviewed || "").getTime() - new Date(b.lastReviewed || "").getTime();
+      return new Date(a.last_reviewed || "").getTime() - new Date(b.last_reviewed || "").getTime();
     } else if (sortBy === "mastery-high") {
-      const aRate = a.timesReviewed 
-        ? (a.timesCorrect || 0) / a.timesReviewed 
+      const aRate = a.times_reviewed 
+        ? (a.times_correct || 0) / a.times_reviewed 
         : 0;
-      const bRate = b.timesReviewed 
-        ? (b.timesCorrect || 0) / b.timesReviewed 
+      const bRate = b.times_reviewed 
+        ? (b.times_correct || 0) / b.times_reviewed 
         : 0;
       return bRate - aRate;
     } else if (sortBy === "mastery-low") {
-      const aRate = a.timesReviewed 
-        ? (a.timesCorrect || 0) / a.timesReviewed 
+      const aRate = a.times_reviewed 
+        ? (a.times_correct || 0) / a.times_reviewed 
         : 0;
-      const bRate = b.timesReviewed 
-        ? (b.timesCorrect || 0) / b.timesReviewed 
+      const bRate = b.times_reviewed 
+        ? (b.times_correct || 0) / b.times_reviewed 
         : 0;
       return aRate - bRate;
     }
