@@ -43,7 +43,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
   return (
     <div className="h-[300px] w-full max-w-md mx-auto" onClick={handleFlip}>
       <div className={`flashcard ${isFlipped ? "flipped" : ""}`}>
-        <Card className="flashcard-front flex flex-col justify-between p-6 cursor-pointer">
+        <Card className="flashcard-front flex flex-col justify-between p-6 cursor-pointer bg-gradient-to-b from-secondary/70 to-background/90 backdrop-blur-sm">
           <div className="flex justify-between items-start">
             <div className="text-xs text-muted-foreground">
               {flashcard.last_reviewed && (
@@ -65,7 +65,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-background/50 hover:bg-background/80"
               onClick={(e) => {
                 e.stopPropagation();
                 handleFlip();
@@ -77,7 +77,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
           </div>
         </Card>
         
-        <Card className="flashcard-back flex flex-col justify-between p-6 cursor-pointer">
+        <Card className="flashcard-back flex flex-col justify-between p-6 cursor-pointer bg-gradient-to-b from-primary/10 to-secondary/40 backdrop-blur-sm">
           <div className="flex justify-between items-start">
             <div className="text-xs text-muted-foreground">
               {flashcard.times_reviewed !== undefined && (
@@ -103,7 +103,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-red-500/20 hover:bg-red-500/10 hover:text-red-600 flex items-center gap-1"
+                className="border-red-500/20 hover:bg-red-500/10 hover:text-red-600 flex items-center gap-1 bg-background/50"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleIncorrect();
@@ -115,7 +115,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-green-500/20 hover:bg-green-500/10 hover:text-green-600 flex items-center gap-1"
+                className="border-green-500/20 hover:bg-green-500/10 hover:text-green-600 flex items-center gap-1 bg-background/50"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCorrect();
@@ -130,7 +130,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 bg-background/50 hover:bg-background/80"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleFlip();
