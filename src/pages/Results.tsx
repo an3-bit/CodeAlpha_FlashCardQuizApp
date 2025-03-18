@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronDown, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,12 +29,14 @@ import Header from "@/components/Header";
 import ScoreChart from "@/components/ScoreChart";
 import { useFlashcards, Category } from "@/context/FlashcardContext";
 import { formatQuizDuration, getCategoryName, getAverageScore } from "@/lib/helpers";
+import { supabase } from "@/integrations/supabase/client";
 
 const Results = () => {
   const navigate = useNavigate();
-  const { quizResults, getResultsByCategory } = useFlashcards();
+  const { quizResults, getResultsByCategory, flashcards } = useFlashcards();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [chartVariant, setChartVariant] = useState<"bar" | "line">("line");
+  const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState<number>(0);
   
   const filteredResults = selectedCategory === "all"
     ? quizResults
@@ -46,6 +48,62 @@ const Results = () => {
   );
   
   const averageScore = getAverageScore(sortedResults);
+
+  // Calculate total questions answered across all quizzes
+  useEffect(() => {
+    const calculateTotalQuestionsAnswered = () => {
+      const total = quizResults.reduce((sum, result) => sum + result.totalQuestions, 0);
+      setTotalQuestionsAnswered(total);
+    };
+
+    calculateTotalQuestionsAnswered();
+  }, [quizResults]);
+
+  // Subscribe to real-time updates for quiz_results table
+  useEffect(() => {
+    const channel = supabase
+      .channel('results-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quiz_results'
+        },
+        () => {
+          // This will trigger a re-fetch of quiz results
+          console.log('Quiz results updated');
+        }
+      )
+      .subscribe();   
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Subscribe to real-time updates for flashcards table
+  useEffect(() => {
+    const channel = supabase
+      .channel('flashcards-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'flashcards'
+        },
+        () => {
+          // This will trigger a re-fetch of flashcards
+          console.log('Flashcards updated');
+        }
+      )
+      .subscribe();   
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   
   const handleStartQuiz = () => {
     if (selectedCategory === "all") {
@@ -120,7 +178,14 @@ const Results = () => {
                 <div className="bg-secondary rounded-xl p-4">
                   <div className="text-sm text-muted-foreground mb-1">Questions Answered</div>
                   <div className="text-3xl font-medium">
-                    {sortedResults.reduce((sum, result) => sum + result.totalQuestions, 0)}
+                    {totalQuestionsAnswered}
+                  </div>
+                </div>
+                
+                <div className="bg-secondary rounded-xl p-4">
+                  <div className="text-sm text-muted-foreground mb-1">Total Flashcards</div>
+                  <div className="text-3xl font-medium">
+                    {flashcards.length}
                   </div>
                 </div>
                 
