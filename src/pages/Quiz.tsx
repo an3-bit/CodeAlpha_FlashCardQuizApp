@@ -69,10 +69,12 @@ const Quiz = () => {
   }, [answeredCards, quizCards, startTime, addQuizResult, category]);
   
   const handleCorrectAnswer = (flashcard: Flashcard) => {
-    setAnsweredCards({
+    const newAnsweredCards = {
       ...answeredCards,
       [flashcard.id]: true,
-    });
+    };
+    
+    setAnsweredCards(newAnsweredCards);
     
     updateFlashcard({
       ...flashcard,
@@ -87,10 +89,12 @@ const Quiz = () => {
   };
   
   const handleIncorrectAnswer = (flashcard: Flashcard) => {
-    setAnsweredCards({
+    const newAnsweredCards = {
       ...answeredCards,
       [flashcard.id]: false,
-    });
+    };
+    
+    setAnsweredCards(newAnsweredCards);
     
     updateFlashcard({
       ...flashcard,
@@ -119,6 +123,7 @@ const Quiz = () => {
     navigate("/results");
   };
   
+  // Calculate progress based on number of answered cards
   const progress = quizCards.length > 0
     ? Math.round((Object.keys(answeredCards).length / quizCards.length) * 100)
     : 0;
