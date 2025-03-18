@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Clock, Flame, HelpCircle } from "lucide-react";
@@ -123,7 +124,7 @@ const Quiz = () => {
     : 0;
   
   const correctAnswers = Object.values(answeredCards).filter(value => value).length;
-  const currentScore = quizCards.length > 0
+  const currentScore = quizCards.length > 0 && Object.keys(answeredCards).length > 0
     ? Math.round((correctAnswers / Object.keys(answeredCards).length) * 100) || 0
     : 0;
 

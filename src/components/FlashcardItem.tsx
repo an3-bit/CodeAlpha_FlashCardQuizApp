@@ -33,7 +33,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
     if (onEdit) onEdit(flashcard);
   };
 
-  const handleCorrect = async () => {
+  const handleCorrect = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isUpdating) return;
     
     setIsUpdating(true);
@@ -43,10 +44,13 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
       }
     } finally {
       setIsUpdating(false);
+      // Auto-flip back to front when answer is submitted
+      setIsFlipped(false);
     }
   };
 
-  const handleIncorrect = async () => {
+  const handleIncorrect = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isUpdating) return;
     
     setIsUpdating(true);
@@ -56,6 +60,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
       }
     } finally {
       setIsUpdating(false);
+      // Auto-flip back to front when answer is submitted
+      setIsFlipped(false);
     }
   };
 
@@ -123,10 +129,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                 variant="outline"
                 size="sm"
                 className="border-red-500/20 hover:bg-red-500/10 hover:text-red-600 flex items-center gap-1 bg-white/70"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleIncorrect();
-                }}
+                onClick={handleIncorrect}
                 disabled={isUpdating}
               >
                 <X className="h-3.5 w-3.5" />
@@ -136,10 +139,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                 variant="outline"
                 size="sm"
                 className="border-green-500/20 hover:bg-green-500/10 hover:text-green-600 flex items-center gap-1 bg-white/70"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCorrect();
-                }}
+                onClick={handleCorrect}
                 disabled={isUpdating}
               >
                 <Check className="h-3.5 w-3.5" />
