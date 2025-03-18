@@ -29,7 +29,6 @@ import Header from "@/components/Header";
 import ScoreChart from "@/components/ScoreChart";
 import { useFlashcards, Category } from "@/context/FlashcardContext";
 import { formatQuizDuration, getCategoryName, getAverageScore } from "@/lib/helpers";
-import { supabase } from "@/integrations/supabase/client";
 
 const Results = () => {
   const navigate = useNavigate();
@@ -58,52 +57,6 @@ const Results = () => {
 
     calculateTotalQuestionsAnswered();
   }, [quizResults]);
-
-  // Subscribe to real-time updates for quiz_results table
-  useEffect(() => {
-    const channel = supabase
-      .channel('results-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quiz_results'
-        },
-        () => {
-          // This will trigger a re-fetch of quiz results
-          console.log('Quiz results updated');
-        }
-      )
-      .subscribe();   
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // Subscribe to real-time updates for flashcards table
-  useEffect(() => {
-    const channel = supabase
-      .channel('flashcards-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'flashcards'
-        },
-        () => {
-          // This will trigger a re-fetch of flashcards
-          console.log('Flashcards updated');
-        }
-      )
-      .subscribe();   
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
   
   const handleStartQuiz = () => {
     if (selectedCategory === "all") {

@@ -22,6 +22,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
   quizMode = false,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -32,12 +33,30 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
     if (onEdit) onEdit(flashcard);
   };
 
-  const handleCorrect = () => {
-    if (onCorrect) onCorrect(flashcard);
+  const handleCorrect = async () => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      if (onCorrect) {
+        await onCorrect(flashcard);
+      }
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleIncorrect = () => {
-    if (onIncorrect) onIncorrect(flashcard);
+  const handleIncorrect = async () => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      if (onIncorrect) {
+        await onIncorrect(flashcard);
+      }
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -108,6 +127,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                   e.stopPropagation();
                   handleIncorrect();
                 }}
+                disabled={isUpdating}
               >
                 <X className="h-3.5 w-3.5" />
                 <span>Got it wrong</span>
@@ -120,6 +140,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
                   e.stopPropagation();
                   handleCorrect();
                 }}
+                disabled={isUpdating}
               >
                 <Check className="h-3.5 w-3.5" />
                 <span>Got it right</span>

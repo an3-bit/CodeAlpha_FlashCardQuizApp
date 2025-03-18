@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
@@ -112,6 +111,29 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     fetchFlashcards();
+
+    // Set up real-time subscription for flashcards
+    if (user) {
+      const flashcardsChannel = supabase
+        .channel('flashcards-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'flashcards'
+          },
+          (payload) => {
+            console.log('Flashcard changed:', payload);
+            fetchFlashcards(); // Refetch all flashcards on any change
+          }
+        )
+        .subscribe();   
+
+      return () => {
+        supabase.removeChannel(flashcardsChannel);
+      };
+    }
   }, [user]);
 
   // Fetch quiz results from Supabase when user changes
@@ -149,6 +171,29 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     fetchQuizResults();
+
+    // Set up real-time subscription for quiz results
+    if (user) {
+      const quizResultsChannel = supabase
+        .channel('quiz-results-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'quiz_results'
+          },
+          (payload) => {
+            console.log('Quiz result changed:', payload);
+            fetchQuizResults(); // Refetch all quiz results on any change
+          }
+        )
+        .subscribe();   
+
+      return () => {
+        supabase.removeChannel(quizResultsChannel);
+      };
+    }
   }, [user]);
 
   // Fetch shared decks from Supabase when user changes
@@ -211,7 +256,8 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           ...data[0],
           category: data[0].category as Category
         };
-        setFlashcards([typedFlashcard, ...flashcards]);
+        
+        // No need to update state manually with real-time updates
         toast.success('Flashcard created successfully');
       }
     } catch (error: any) {
@@ -242,10 +288,7 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (error) throw error;
       
-      setFlashcards(
-        flashcards.map((card) => (card.id === flashcard.id ? flashcard : card))
-      );
-      
+      // No need to update state manually with real-time updates
       toast.success('Flashcard updated successfully');
     } catch (error: any) {
       console.error('Error updating flashcard:', error);
@@ -267,7 +310,7 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (error) throw error;
       
-      setFlashcards(flashcards.filter((card) => card.id !== id));
+      // No need to update state manually with real-time updates
       toast.success('Flashcard deleted successfully');
     } catch (error: any) {
       console.error('Error deleting flashcard:', error);
@@ -303,17 +346,7 @@ export const FlashcardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (error) throw error;
       
       if (data && data[0]) {
-        const formattedResult: QuizResult = {
-          id: data[0].id,
-          user_id: data[0].user_id,
-          date: data[0].date,
-          category: data[0].category as Category,
-          totalQuestions: data[0].total_questions,
-          correctAnswers: data[0].correct_answers,
-          timeSpent: data[0].time_spent
-        };
-        
-        setQuizResults([formattedResult, ...quizResults]);
+        // No need to update state manually with real-time updates
         
         // Update study metrics
         await updateStudyMetrics(result.category, result.timeSpent, result.totalQuestions, result.correctAnswers);
