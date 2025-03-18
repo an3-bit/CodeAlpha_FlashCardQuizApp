@@ -1,8 +1,12 @@
-# Welcome to your Lovable project
+# Welcome to your Flashcard Quiz App
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/1bc40d9b-f3b4-4ead-9b1a-e37327eac674
+ This project I was required to Create a flashcard quiz app for studying. Where Users can
+ add flashcards with questions and answers, then
+ quiz themselves on the material. Track and display
+ quiz scores.
+
 
 ## How can I edit this code?
 
