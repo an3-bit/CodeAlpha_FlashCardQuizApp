@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronDown, Filter } from "lucide-react";
@@ -46,6 +45,7 @@ const Results = () => {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
   
+  // Recalculate the average score whenever filteredResults changes
   const averageScore = getAverageScore(sortedResults);
 
   // Calculate total questions answered across all quizzes
@@ -125,21 +125,17 @@ const Results = () => {
                 
                 <div className="bg-secondary rounded-xl p-4">
                   <div className="text-sm text-muted-foreground mb-1">Quizzes Taken</div>
-                  <div className="text-3xl font-medium">{sortedResults.length}</div>
+                  <div className="text-3xl font-medium">{quizResults.length}</div>
                 </div>
                 
                 <div className="bg-secondary rounded-xl p-4">
                   <div className="text-sm text-muted-foreground mb-1">Questions Answered</div>
-                  <div className="text-3xl font-medium">
-                    {totalQuestionsAnswered}
-                  </div>
+                  <div className="text-3xl font-medium">{totalQuestionsAnswered}</div>
                 </div>
                 
                 <div className="bg-secondary rounded-xl p-4">
                   <div className="text-sm text-muted-foreground mb-1">Total Flashcards</div>
-                  <div className="text-3xl font-medium">
-                    {flashcards.length}
-                  </div>
+                  <div className="text-3xl font-medium">{flashcards.length}</div>
                 </div>
                 
                 <Button className="w-full" onClick={handleStartQuiz}>
