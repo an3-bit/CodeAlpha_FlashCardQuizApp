@@ -6,17 +6,9 @@
  add flashcards with questions and answers, then
  quiz themselves on the material. Track and display
  quiz scores.
+![image](https://github.com/user-attachments/assets/3fc0ff64-86cc-4883-b047-ecdb55be3778)
 
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/1bc40d9b-f3b4-4ead-9b1a-e37327eac674) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
